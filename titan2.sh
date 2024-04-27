@@ -17,7 +17,7 @@ read -p "Masukan Code Identity Anda: " id
 read -p "Silakan masukkan Jumlah node yang ingin Anda buat, satu IP dibatasi paling banyak 5 node: " container_count
 
 # Biarkan pengguna memasukkan nomor port RPC awal
-read -p "Silakan masukkan RPC awal yang ingin Anda atur (silakan atur sendiri nomor portnya, aktifkan 5 Port node akan diperluas secara numerik secara berurutan) : " start_rpc_port
+read -p "Silakan masukkan RPC awal yang ingin Anda atur : " start_rpc_port
 
 # Biarkan pengguna memasukkan ukuran ruang yang ingin mereka alokasikan 
 read -p "Silakan masukkan ukuran ruang penyimpanan (GB) yang ingin Anda alokasikan untuk setiap node, batas atas tunggal adalah 64GB, halaman web lebih efektif Lambat. Setelah menunggu 20 menit, halaman web dapat ditanyakan: " storage_gb
