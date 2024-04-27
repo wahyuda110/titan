@@ -8,7 +8,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 echo "source @y95277777 im just translate"
-echo "================================================================"
+echo "====================Titan Node===================="
 
 # Baca dan muat informasi kode identitas
 read -p "Masukan Code Identity Anda: " id
