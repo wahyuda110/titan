@@ -1,88 +1,85 @@
 #!/bin/bash
 
-# 检查是否以root用户运行脚本
+# Periksa apakah skrip dijalankan sebagai pengguna root
 if [ "$(id -u)" != "0" ]; then
-    echo "此脚本需要以root用户权限运行。"
-    echo "请尝试使用 'sudo -i' 命令切换到root用户，然后再次运行此脚本。"
+    echo "Skrip ini harus dijalankan dengan izin pengguna root。"
+    echo "Silakan coba gunakan perintah 'Gunakan sudo -i' untuk beralih ke pengguna root, lalu jalankan skrip ini lagi. "
     exit 1
 fi
 
-echo "脚本以及教程由推特用户大赌哥 @y95277777 编写，免费开源，请勿相信收费"
-echo "================================================================"
-echo "节点社区 Telegram 群组:https://t.me/niuwuriji"
-echo "节点社区 Telegram 频道:https://t.me/niuwuriji"
-echo "节点社区 Discord 社群:https://discord.gg/GbMV5EcNWF"
+echo "Saya Hanya Translate Source @y95277777"
+echo "======================Titan Node============================="
 
-# 读取加载身份码信息
-read -p "输入你的身份码: " id
+# Baca dan muat informasi kode identitas
+read -p "Masukan Code Identity Anda: " id
 
-# 让用户输入想要创建的容器数量
-read -p "请输入你想要创建的节点数量，单IP限制最多5个节点: " container_count
+# pengguna memasukkan jumlah container yang ingin dibuat
+read -p "Silakan masukkan Jumlah node yang ingin Anda buat, satu IP dibatasi paling banyak 5 node: " container_count
 
-# 让用户输入起始 RPC 端口号
-read -p "请输入你想要设置的起始 RPC （端口号请自行设定，开启5个节点端口将会依次数字顺延）: " start_rpc_port
+# Biarkan pengguna memasukkan nomor port RPC awal
+read -p "Silakan masukkan RPC awal yang ingin Anda atur (silakan atur sendiri nomor portnya. Pembukaan 5 port node akan diberi nomor urut）: " start_rpc_port
 
-# 让用户输入想要分配的空间大小
-read -p "请输入你想要分配每个节点的存储空间大小（GB），单个上限64G, 网页生效较慢，等待20分钟后，网页查询即可: " storage_gb
+# Biarkan pengguna memasukkan ukuran ruang yang ingin mereka alokasikan 
+read -p "Silakan masukkan ukuran ruang penyimpanan (GB) yang ingin Anda alokasikan untuk setiap node, batas atas tunggal adalah 64GB, halaman web lebih efektif Lambat. Setelah menunggu 20 menit, halaman web dapat ditanyakan: " storage_gb
 
-# 让用户输入存储路径（可选）
-read -p "请输入节点存储数据的宿主机路径（直接回车将使用默认路径 titan_storage_$i,依次数字顺延）: " custom_storage_path
+# pengguna memasukkan jalur penyimpanan (opsional)
+read -p "Silakan masukkan jalur host tempat node menyimpan data (tekan Enter secara langsung dan jalur default titan_storage_$i akan digunakan, diikuti dengan ekstensi Nomor）: " custom_storage_path
 
 apt update
 
-# 检查 Docker 是否已安装
+# Centang jika Docker diinstal 
 if ! command -v docker &> /dev/null
 then
-    echo "未检测到 Docker，正在安装..."
+    echo "Docker tidak terdeteksi, menginstal..."
     apt-get install ca-certificates curl gnupg lsb-release -y
     
-    # 安装 Docker 最新版本
+    # Instal Docker versi terbaru
     apt-get install docker.io -y
 else
-    echo "Docker 已安装。"
+    echo "Docker telah diinstal. "
 fi
 
-# 拉取Docker镜像
+# Tarik gambar Docker
 docker pull nezha123/titan-edge:1.4
 
-# 创建用户指定数量的容器
+# Buat sejumlah kontainer yang ditentukan pengguna
 for ((i=1; i<=container_count; i++))
 do
     current_rpc_port=$((start_rpc_port + i - 1))
 
-    # 判断用户是否输入了自定义存储路径
+    # Tentukan apakah pengguna telah memasukkan jalur penyimpanan khusus
     if [ -z "$custom_storage_path" ]; then
-        # 用户未输入，使用默认路径
+        # Jika pengguna belum memasukkan, gunakan jalur default
         storage_path="$PWD/titan_storage_$i"
     else
-        # 用户输入了自定义路径，使用用户提供的路径
+        # pengguna telah memasukkan jalur khusus, gunakan Jalur yang disediakan oleh pengguna
         storage_path="$custom_storage_path"
     fi
 
-    # 确保存储路径存在
+    # Pastikan jalur penyimpanan ada
     mkdir -p "$storage_path"
 
-    # 运行容器，并设置重启策略为always
+    # Jalankan container dan setel kebijakan mulai ulang ke selalu 
     container_id=$(docker run -d --restart always -v "$storage_path:/root/.titanedge/storage" --name "titan$i" --net=host  nezha123/titan-edge:1.4)
 
-    echo "节点 titan$i 已经启动 容器ID $container_id"
+    echo "Node titan$i telah memulai ID kontainer $container_id"
 
     sleep 30
 
-    # 修改宿主机上的config.toml文件以设置StorageGB值和端口
+    # Ubah file config.toml host untuk mengatur nilai StorageGB dan port
     docker exec $container_id bash -c "\
         sed -i 's/^[[:space:]]*#StorageGB = .*/StorageGB = $storage_gb/' /root/.titanedge/config.toml && \
         sed -i 's/^[[:space:]]*#ListenAddress = \"0.0.0.0:1234\"/ListenAddress = \"0.0.0.0:$current_rpc_port\"/' /root/.titanedge/config.toml && \
-        echo '容器 titan'$i' 的存储空间设置为 $storage_gb GB，RPC 端口设置为 $current_rpc_port'"
+        echo 'Ruang penyimpanan titan'$i' disetel ke $storage_gb GB，RPC disetel ke $current_rpc_port'"
 
-    # 重启容器以让设置生效
+    # Mulai ulang wadah agar pengaturan diterapkan 
     docker restart $container_id
 
-    # 进入容器并执行绑定命令
+    # Masuk ke container dan lakukan pengikatan Order
     docker exec $container_id bash -c "\
         titan-edge bind --hash=$id https://api-test1.container1.titannet.io/api/v2/device/binding"
-    echo "节点 titan$i 已绑定."
+    echo "Node titan$i terikat ."
 
 done
 
-echo "==============================所有节点均已设置并启动==================================="
+echo "===========================Semua node telah disiapkan dan dimulai==========================="
