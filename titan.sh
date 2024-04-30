@@ -1,4 +1,6 @@
 #!/bin/bash 
+#Screen
+screen -R titan
 
 # Periksa apakah skrip dijalankan sebagai pengguna root 
 if [ "$(id -u)" != "0" ]; then
