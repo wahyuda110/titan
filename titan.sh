@@ -1,6 +1,5 @@
 #!/bin/bash 
-#Screen
-screen -R titan
+
 
 # Periksa apakah skrip dijalankan sebagai pengguna root 
 if [ "$(id -u)" != "0" ]; then
@@ -8,6 +7,8 @@ if [ "$(id -u)" != "0" ]; then
     echo "Silakan coba gunakan perintah 'Gunakan sudo -i' untuk beralih ke pengguna root, lalu jalankan skrip ini lagi."
     exit 1
 fi
+#Screen
+screen -R titan
 
 echo "=======================Titan Node=======================" 
 
